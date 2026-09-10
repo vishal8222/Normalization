@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB Normalizer — Database Normalization Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Include Chart.js CDN for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>🗄️ Database Normalizer</h1>
+        <p>Upload → Define Dependencies → Normalize → Export</p>
+    </header>
+
+    <div class="layout">
+        <main>
+            <!-- Toast Notifications -->
+            <div id="toast-container"></div>
+
+            <!-- STEP 1: Upload Section -->
+            <section id="upload-section" class="step-card active">
+                <h2>Step 1: Upload Your Data</h2>
+                <div class="upload-area" id="drop-zone">
+                    <p>📁 Drag & drop CSV, Excel, or PDF file here</p>
+                    <p>or</p>
+                    <input type="file" id="file-input" accept=".csv,.xlsx,.pdf" hidden>
+                    <button class="primary-btn" onclick="document.getElementById('file-input').click()">Choose File</button>
+                </div>
+                <div id="upload-preview" class="hidden">
+                    <h3>Data Preview</h3>
+                    <div class="table-container" id="preview-table-container"></div>
+                    <button id="proceed-step-2" class="primary-btn mt-4">Proceed to Step 2 ➡️</button>
+                </div>
+            </section>
+
+            <!-- STEP 2: Define Dependencies -->
+            <section id="dependency-section" class="step-card hidden">
+                <h2>Step 2: Define Functional Dependencies</h2>
+                <div class="form-group">
+                    <label>Select Primary Key column(s):</label>
+                    <div id="pk-selector" class="checkbox-group">
+                        <!-- Checkboxes for each column -->
+                    </div>
+                </div>
+                
+                <div id="dependency-list" class="dependency-list">
+                    <h3>Functional Dependencies:</h3>
+                    <div id="deps-container">
+                        <!-- Dynamic rows: determinant -> dependent -->
+                    </div>
+                    <button id="add-dep-btn" class="secondary-btn mt-2">+ Add Dependency</button>
+                </div>
+                
+                <div class="actions mt-4">
+                    <button id="back-step-1" class="secondary-btn">⬅️ Back</button>
+                    <button id="normalize-btn" class="primary-btn">🚀 Normalize!</button>
+                </div>
+            </section>
+
+            <!-- STEP 3: Results -->
+            <section id="results-section" class="step-card hidden">
+                <h2>Step 3: Normalization Results</h2>
+                
+                <!-- Progress stepper: 1NF -> 2NF -> 3NF -->
+                <div class="stepper">
+                    <div class="step" data-step="1nf">1NF</div>
+                    <div class="step line"></div>
+                    <div class="step" data-step="2nf">2NF</div>
+                    <div class="step line"></div>
+                    <div class="step" data-step="3nf">3NF</div>
+                </div>
+
+                <!-- Step details (tabbed view) -->
+                <div id="step-details">
+                    <!-- For each step: violations, explanation, SQL, result tables -->
+                </div>
+
+                <!-- Visualization area -->
+                <div id="visualization" class="mt-4">
+                    <h3>📊 Visualization</h3>
+                    <div class="viz-row">
+                        <div class="chart-container">
+                            <canvas id="stats-chart"></canvas>
+                        </div>
+                        <div id="er-diagram-container" class="er-diagram-wrapper">
+                            <!-- SVG goes here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated SQL -->
+                <div id="sql-output" class="mt-4">
+                    <h3>📝 Generated SQL (MySQL)</h3>
+                    <div class="code-container">
+                        <pre><code id="ddl-code"></code></pre>
+                        <button onclick="app.copySQL()" class="icon-btn">📋 Copy</button>
+                    </div>
+                </div>
+
+                <!-- Export buttons -->
+                <div id="export-buttons" class="export-actions mt-4">
+                    <h3>📥 Export Results</h3>
+                    <button onclick="app.exportExcel()" class="export-btn excel">📊 Excel Report</button>
+                    <button onclick="app.exportPdf()" class="export-btn pdf">📄 PDF Report</button>
+                    <button onclick="app.exportSQL()" class="export-btn sql">💾 SQL File</button>
+                    <button onclick="app.reset()" class="secondary-btn float-right">🔄 Start Over</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Sidebar: History -->
+        <aside id="history-sidebar">
+            <h3>📜 History</h3>
+            <input type="text" id="search-input" placeholder="Search past normalizations...">
+            <div id="history-list"></div>
+        </aside>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="/static/js/er_diagram.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
