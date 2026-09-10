@@ -118,7 +118,3 @@ The included `sample_data/students.csv` contains intentional violations:
 - **File Processing** (CSV, Excel, PDF parsing)
 - **Full-Text Search** (SQLite FTS5)
 - **Report Generation** (styled Excel & PDF exports)
-
-## 📄 License
-
-MIT
