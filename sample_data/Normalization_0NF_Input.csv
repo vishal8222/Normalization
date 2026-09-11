@@ -1,0 +1,8 @@
+OrderID,CustomerID,CustomerName,CustomerCity,ProductIDs,ProductNames,Quantities,ShippingMode,OrderDate
+5001,101,Amit Sharma,Delhi,"P001,P002","Laptop,Mouse","1,2",Standard,2026-08-01
+5002,102,Priya Singh,Mumbai,P003,Office Chair,1,Express,2026-08-03
+5003,103,Rahul Verma,Lucknow,"P004,P005","Keyboard,Monitor","1,2",Standard,2026-08-04
+5004,104,Neha Gupta,Jaipur,"P006,P007","Desk,Notebook","1,5",Express,2026-08-06
+5005,105,Arjun Mehta,Pune,"P001,P008","Laptop,Headphones","1,1",Standard,2026-08-07
+5006,106,Sneha Patel,Ahmedabad,"P009,P010","Printer,Paper","1,10",Express,2026-08-09
+5007,107,Vikram Joshi,Bhopal,P003,Office Chair,2,Standard,2026-08-10

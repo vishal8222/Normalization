@@ -4,6 +4,7 @@ import os
 import config
 from models.schemas import UploadResponse
 from engine.parser import parse_csv, parse_excel, parse_pdf
+from engine.dependency import FunctionalDependencyAnalyzer
 from typing import Dict, Any
 
 router = APIRouter()
@@ -43,12 +44,39 @@ async def upload_file(file: UploadFile = File(...)):
         "rows": rows,
         "file_type": file_ext
     }
-
     sample_data = rows[:5] if len(rows) > 5 else rows
+
+    # Auto-detect dependencies & potential primary keys
+    suggested_deps = FunctionalDependencyAnalyzer.auto_detect_dependencies(columns, rows)
+    
+    # Filter suggested dependencies to non-trivial ones (exclude if determinant is unique for every row, e.g., surrogate key)
+    # A candidate key has unique values for each row:
+    unique_cols = [c for c in columns if len(set(r.get(c) for r in rows if r.get(c))) == len(rows)]
+    
+    # Filter out determinants that are full row keys (e.g. RecordID) so we focus on business FDs
+    meaningful_deps = []
+    for d in suggested_deps:
+        det_col = d.determinant[0]
+        if det_col not in unique_cols or len(unique_cols) == len(columns):
+            meaningful_deps.append(d)
+
+    # Best guess for composite/primary key:
+    # If there's an OrderID and ProductID pattern or similar composite, or unique_cols
+    suggested_pk = []
+    if "OrderID" in columns and "ProductID" in columns:
+        suggested_pk = ["OrderID", "ProductID"]
+    elif "StudentID" in columns and "Courses" in columns:
+        suggested_pk = ["StudentID", "Courses"]
+    elif unique_cols:
+        suggested_pk = [unique_cols[0]]
+    elif columns:
+        suggested_pk = [columns[0]]
 
     return UploadResponse(
         session_id=session_id,
         columns=columns,
         row_count=len(rows),
-        sample_data=sample_data
+        sample_data=sample_data,
+        suggested_dependencies=meaningful_deps,
+        suggested_primary_key=suggested_pk
     )

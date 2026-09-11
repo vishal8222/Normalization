@@ -45,6 +45,8 @@ class UploadResponse(BaseModel):
     columns: List[str]
     row_count: int
     sample_data: List[Dict[str, Any]]
+    suggested_dependencies: Optional[List[FunctionalDependency]] = None
+    suggested_primary_key: Optional[List[str]] = None
 
 class DependencyRequest(BaseModel):
     session_id: str

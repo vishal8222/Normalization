@@ -95,6 +95,8 @@ const app = {
 
             this.state.sessionId = data.session_id;
             this.state.columns = data.columns;
+            this.state.suggestedDependencies = data.suggested_dependencies || [];
+            this.state.suggestedPrimaryKey = data.suggested_primary_key || [];
             
             this.showPreview(data.sample_data, data.columns);
             this.showToast('File uploaded successfully!');
@@ -135,41 +137,83 @@ const app = {
         document.getElementById('add-dep-btn').addEventListener('click', () => this.addDependencyRow());
         document.getElementById('back-step-1').addEventListener('click', () => this.showSection('upload-section'));
         document.getElementById('normalize-btn').addEventListener('click', () => this.submitAndNormalize());
+        const autoBtn = document.getElementById('auto-detect-btn');
+        if (autoBtn) {
+            autoBtn.addEventListener('click', () => this.autoDetectDependencies());
+        }
     },
 
     renderPrimaryKeySelector() {
         const container = document.getElementById('pk-selector');
         container.innerHTML = '';
+        const suggestedPks = this.state.suggestedPrimaryKey || [];
+
         this.state.columns.forEach(col => {
+            const isChecked = suggestedPks.includes(col);
             const div = document.createElement('div');
             div.className = 'checkbox-item';
             div.innerHTML = `
-                <input type="checkbox" id="pk_${col}" value="${col}">
+                <input type="checkbox" id="pk_${col}" value="${col}" ${isChecked ? 'checked' : ''}>
                 <label for="pk_${col}">${col}</label>
             `;
             container.appendChild(div);
         });
         
-        // Reset deps
+        // Reset deps container
         document.getElementById('deps-container').innerHTML = '';
-        this.addDependencyRow(); // add one empty row
+        
+        // If we have auto-detected dependencies, auto-populate them right away!
+        if (this.state.suggestedDependencies && this.state.suggestedDependencies.length) {
+            this.state.suggestedDependencies.forEach(dep => {
+                this.addDependencyRow(dep.determinant, dep.dependent);
+            });
+            this.showToast(`Auto-detected ${this.state.suggestedDependencies.length} functional dependencies!`);
+        } else {
+            this.addDependencyRow(); // add one empty row
+        }
     },
 
-    addDependencyRow() {
+    autoDetectDependencies() {
+        if (!this.state.suggestedDependencies || !this.state.suggestedDependencies.length) {
+            this.showToast('No functional dependencies discovered automatically. You can add them manually!', 'info');
+            return;
+        }
         const container = document.getElementById('deps-container');
-        const rowId = 'dep_' + Date.now();
+        container.innerHTML = '';
+        this.state.suggestedDependencies.forEach(dep => {
+            this.addDependencyRow(dep.determinant, dep.dependent);
+        });
+        this.showToast(`Populated ${this.state.suggestedDependencies.length} functional dependencies.`);
+    },
+
+    addDependencyRow(selectedDets = [], selectedDeps = []) {
+        const container = document.getElementById('deps-container');
+        const rowId = 'dep_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
         const row = document.createElement('div');
         row.className = 'dependency-row';
         row.id = rowId;
 
-        // Multiselect or comma separated input for simplicity. Using basic select multiple.
-        const optionsHtml = this.state.columns.map(c => `<option value="${c}">${c}</option>`).join('');
+        const detOptions = this.state.columns.map(c => {
+            const sel = selectedDets.includes(c) ? 'selected' : '';
+            return `<option value="${c}" ${sel}>${c}</option>`;
+        }).join('');
+
+        const depOptions = this.state.columns.map(c => {
+            const sel = selectedDeps.includes(c) ? 'selected' : '';
+            return `<option value="${c}" ${sel}>${c}</option>`;
+        }).join('');
         
         row.innerHTML = `
-            <select multiple class="det-select" title="Determinants (Hold Ctrl to select multiple)">${optionsHtml}</select>
-            <span> ➡️ </span>
-            <select multiple class="dep-select" title="Dependents (Hold Ctrl to select multiple)">${optionsHtml}</select>
-            <button class="delete-btn" onclick="document.getElementById('${rowId}').remove()">✖</button>
+            <div style="flex:1;">
+                <small style="font-weight:600; color:#1b4f72;">Determinant (LHS):</small>
+                <select multiple class="det-select" size="3" title="Hold Ctrl/Cmd to select multiple">${detOptions}</select>
+            </div>
+            <span style="font-size:1.5rem; color:#1b4f72; align-self:center;"> ➡️ </span>
+            <div style="flex:1;">
+                <small style="font-weight:600; color:#1b4f72;">Dependent (RHS):</small>
+                <select multiple class="dep-select" size="3" title="Hold Ctrl/Cmd to select multiple">${depOptions}</select>
+            </div>
+            <button class="delete-btn" style="align-self:center;" onclick="document.getElementById('${rowId}').remove()">✖</button>
         `;
         container.appendChild(row);
     },

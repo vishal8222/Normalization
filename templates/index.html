@@ -47,7 +47,13 @@
                 </div>
                 
                 <div id="dependency-list" class="dependency-list">
-                    <h3>Functional Dependencies:</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3>Functional Dependencies (Determinant ➡️ Dependent):</h3>
+                        <button id="auto-detect-btn" class="secondary-btn" style="background:#e8f4fd; color:#1b4f72; border-color:#1b4f72; font-weight:600;">✨ Auto-Detect Dependencies</button>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #555; margin-bottom: 15px;">
+                        Tip: In each box, select one or more columns (hold <b>Ctrl</b> / <b>Cmd</b> to multi-select). Or click <b>"✨ Auto-Detect Dependencies"</b> to automatically discover them from your dataset!
+                    </p>
                     <div id="deps-container">
                         <!-- Dynamic rows: determinant -> dependent -->
                     </div>
